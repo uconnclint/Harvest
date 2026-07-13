@@ -1,0 +1,11 @@
+{
+  "name": "harvest-hollow",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "description": "A cozy farm-and-town sim teaching digital citizenship to grades 2-4. No build step; static files.",
+  "scripts": {
+    "test": "node test/data.test.mjs && node test/logic.test.mjs && node test/speech.test.mjs && node test/core.test.mjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

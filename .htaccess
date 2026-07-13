@@ -1,0 +1,13 @@
+# Harvest Hollow — cache policy for Apache hosts (e.g. Dreamhost).
+# The browser otherwise caches the ES modules, so a teacher who replaces the
+# folder keeps running stale code. Always revalidate the app's own files.
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|html|mjs)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  # The pinned game engine never changes — let it cache hard.
+  <FilesMatch "phaser\.min\.js$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
