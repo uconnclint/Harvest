@@ -1,4 +1,10 @@
 import { C } from './config.js';
+// Boots the shared clint-engine context (ctx.settings) that Sfx.js/Speech.js
+// consume — see src/systems/EngineContext.js for the hh.settings adoption
+// mapping (MIGRATION_PLAN.md Phase 3). Sfx.js/Speech.js already import it
+// transitively; imported here too so the game's ESM entry point is the one
+// obvious place engine adoption starts.
+import './systems/EngineContext.js';
 import { BootScene } from './scenes/BootScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { FarmScene } from './scenes/FarmScene.js';
