@@ -5,6 +5,7 @@ import { C } from './config.js';
 // transitively; imported here too so the game's ESM entry point is the one
 // obvious place engine adoption starts.
 import './systems/EngineContext.js';
+import { fitConfig } from '../engine/phaser/scale.js';
 import { BootScene } from './scenes/BootScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { FarmScene } from './scenes/FarmScene.js';
@@ -25,10 +26,12 @@ const game = new Phaser.Game({
   height: C.GAME_H,
   backgroundColor: '#2a2018',
   pixelArt: true,
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
+  // FIT + CENTER_BOTH at 960x540, via the shared engine preset
+  // (engine/phaser/scale.js). Note: fitConfig() also adds min/max clamps
+  // (+/-25% of the base, so 720x405..1200x675 here) that the old inline
+  // config didn't have — the canvas can no longer scale arbitrarily
+  // small/large inside its parent. FIT/CENTER_BOTH behavior is unchanged.
+  scale: fitConfig({ width: C.GAME_W, height: C.GAME_H }),
   scene: [BootScene, TitleScene, FarmScene, TownScene, InteriorScene, GlowboxScene, UIScene],
 });
 
