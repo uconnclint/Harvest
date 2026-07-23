@@ -1,0 +1,56 @@
+# _headers — Cloudflare response headers (Workers static assets and Pages both read this file
+# from the deploy root). Long-cache content that never changes URL when it changes; always
+# revalidate HTML/JS/CSS so a shipped fix actually reaches a cached iPad/Chromebook instead of
+# sitting behind a stale cache with no service worker to bust it (game-house-style's "Cache"
+# gotcha).
+#
+# IMPORTANT — why there is deliberately NO blanket /*.js rule here: Cloudflare's `*` DOES cross
+# path segments, and when several rules match one URL Cloudflare comma-JOINS their Cache-Control
+# values instead of letting the most specific rule win. A blanket /*.js therefore reached
+# /engine/phaser/vendor/phaser.min.js too and produced the self-contradicting header
+# `public, max-age=31536000, immutable, public, max-age=0, must-revalidate` (verified
+# empirically with wrangler dev + curl during the critter-codex migration, 2026-07).
+# Rule of thumb: give every directory ONE owning rule and never let two rules overlap.
+
+# Hashed/immutable art, audio, and the vendored Phaser build never need revalidation.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/engine/phaser/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Entry points — always revalidate so a redeploy is visible on the next load.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Game + engine source, scoped per directory so nothing overlaps the immutable vendor rule
+# above. Add/rename blocks to match your game's actual layout (js/, public/, dist/, …) —
+# one rule per directory, no blankets.
+/src/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/engine/core/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/engine/dom/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# NOTE: engine/phaser/*.js siblings of vendor/ (ui.js, scale.js, inputs/…) get no explicit
+# rule on purpose — a third pattern touching engine/phaser/ would overlap vendor/*. They fall
+# back to the platform's default (non-immutable) caching, so shipped engine fixes still reach
+# players.
+
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/ENGINE_VERSION.json
+  Cache-Control: public, max-age=0, must-revalidate

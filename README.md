@@ -17,10 +17,12 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-**Deploy:** upload the whole folder to any static host (Dreamhost: drop into the site
-directory). No build step, no backend, no network calls — Phaser 3.90.0 is bundled in
-`lib/`. Saves live in localStorage only. **No free-text input anywhere** (names, posts,
-and passwords are all built from pickers) — COPPA-safe by construction.
+**Deploy:** Cloudflare Workers static assets — `wrangler deploy` from this folder (see
+`wrangler.toml`; `_headers` sets cache policy, `.assetsignore` keeps dev-only files out
+of the bundle). No build step, no backend, no network calls — Phaser 3.90.0 is vendored
+in `engine/phaser/vendor/` (a byte-identical copy also still sits in `lib/` for now).
+Saves live in localStorage only. **No free-text input anywhere** (names, posts, and
+passwords are all built from pickers) — COPPA-safe by construction.
 
 ## Controls
 
@@ -87,7 +89,8 @@ per device, farm names from a word picker (never real names).
 
 ```
 index.html
-lib/phaser.min.js        Phaser 3.90.0, pinned (no CDN at runtime)
+engine/                  vendored clint-engine (core/settings + Phaser 3.90.0); see ENGINE_VERSION.json
+lib/phaser.min.js        Phaser 3.90.0, pinned (superseded by engine/phaser/vendor/, kept for now)
 src/
   main.js                game config + save-on-hide safety
   config.js              ALL tuning knobs: costs, prices, maps, day length
@@ -116,9 +119,11 @@ Run `npm test` (or `node test/<name>.test.mjs` individually) for the whole suite
 data integrity, the full-season quest sim, read-aloud fallback, and core mechanics
 (pathfinding, market, wither/regrow, the Glowbox discount rule).
 
-**Deploy note (Apache/Dreamhost):** the included `.htaccess` tells the browser to
-revalidate the game's JS/CSS so replacing the folder takes effect immediately. If
-you ever see an old version after updating, hard-refresh once (Ctrl/Cmd+Shift+R).
+**Deploy note:** `_headers` (read by Cloudflare Workers/Pages) always revalidates the
+game's JS/CSS/HTML so a redeploy reaches players immediately, while the vendored
+Phaser build caches hard as immutable. The included `.htaccess` is a legacy Apache/
+Dreamhost fallback kept for now but no longer the deploy path. If you ever see an old
+version after updating on any host, hard-refresh once (Ctrl/Cmd+Shift+R).
 
 ## Extending to Summer
 
