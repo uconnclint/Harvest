@@ -51,7 +51,10 @@
     })();
   </script>
 
-  <script src="lib/phaser.min.js"></script>
+  <!-- Vendored via the shared clint-engine copy (engine/phaser/vendor/), confirmed byte-identical
+       (md5 c821d2f9ad096f568c819fe1b4bc41e6) to the old lib/phaser.min.js, which stays in place
+       for now rather than being deleted this round. -->
+  <script src="engine/phaser/vendor/phaser.min.js"></script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>
