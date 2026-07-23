@@ -121,7 +121,14 @@ export function createGameContext(options = {}) {
   const audio = factories.createAudio({ cues: options.cues, music: options.music, files: options.files, settings });
   const speech = factories.createSpeech({ ...(options.speech || {}), settings });
   const feedback = factories.createFeedback({ ...(options.feedback || {}), settings });
-  const progress = createProgress({ ...(options.progress || {}), save });
+
+  // Progress is OPT-IN (v0.1.2): it stores its state under the save blob's
+  // `progress` key, and wiring it unconditionally wrote that subtree into
+  // EVERY game's save — colliding with any game whose own save schema uses a
+  // `progress` field (found during the netrunner + Math Arcade migrations).
+  // Pass `progress: {}` (or real options) to enable; ctx.progress is null
+  // otherwise and the engine never touches the save blob's `progress` key.
+  const progress = options.progress ? createProgress({ ...options.progress, save }) : null;
 
   const seedInput = options.randomSeed;
   const seed = seedInput === undefined
