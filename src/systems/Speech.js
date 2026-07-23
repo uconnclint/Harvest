@@ -2,13 +2,23 @@
 // Web Speech API (window.speechSynthesis) — entirely on-device, no network
 // calls, nothing collected. COPPA-safe like the rest of the game.
 //
-// Two modes, both stored per-device in hh.settings:
-//   tts     — master switch; when on, the speaker buttons appear and work (default on)
-//   ttsAuto — auto-read each new dialogue line / toast hands-free (default off)
+// Two modes, now persisted through the shared engine settings
+// (engine/core/settings.js) instead of a private hh.settings blob:
+//   readAloud (was hh.settings.tts)     — master switch; when on, the
+//     speaker buttons appear and work (engine default: on)
+//   ttsAuto   (was hh.settings.ttsAuto) — auto-read each new dialogue line /
+//     toast hands-free (Harvest-specific extra setting; default off)
+// A returning player's old hh.settings.tts/ttsAuto choices are adopted
+// once, up front, by the legacySettingsReaders in EngineContext.js.
+//
+// Speech.js keeps its OWN SpeechSynthesis backend below (voice-picking +
+// the B15 Chromebook cancel/delay workaround) rather than routing through
+// engine/core/speech.js's generic TTS fallback, which has neither — only
+// the read-aloud on/off + auto-read persistence moved to ctx.settings.
 //
 // Degrades to a silent no-op anywhere the API is missing (old browsers, tests).
 
-import { Save } from './SaveManager.js';
+import { settings } from './EngineContext.js';
 
 const hasAPI = typeof window !== 'undefined' && 'speechSynthesis' in window;
 let voice = null;
@@ -31,20 +41,16 @@ if (hasAPI) {
 
 export const Speech = {
   available() { return hasAPI; },
-  isOn() { return Save.settings().tts !== false; },     // default on
-  isAuto() { return !!Save.settings().ttsAuto; },        // default off
+  isOn() { return settings.get('readAloud') !== false; },  // default on
+  isAuto() { return !!settings.get('ttsAuto'); },           // default off
 
   setOn(on) {
-    const s = Save.settings();
-    s.tts = on;
-    Save.saveSettings(s);
+    settings.set('readAloud', !!on);
     if (!on) this.stop();
   },
 
   setAuto(on) {
-    const s = Save.settings();
-    s.ttsAuto = on;
-    Save.saveSettings(s);
+    settings.set('ttsAuto', !!on);
   },
 
   // Speak now. Cancels anything in progress so rapid taps don't pile up.
